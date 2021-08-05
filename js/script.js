@@ -34,8 +34,9 @@ function operate(operator,num1, num2) {
 };
 
 function extendNumber(char) {
-    newNumber = newNumber + char;
-    showOnDisplay(newNumber);
+    let oldNumber = (currentNumber == undefined) ? "" : currentNumber;
+    currentNumber = oldNumber + char;
+    showOnDisplay(currentNumber);
 };
 
 function showOnDisplay(text) {
@@ -50,35 +51,23 @@ function clearDisplay() {
 
 function clear() {
     clearDisplay();
-    currentCount = null;
-    newNumber = "";
-    operatorsUsed = 0;
+    typeHistory = [];
+    currentNumber = "";
 };
 
-function calculate(operator) {
-    operatorsUsed += 1;
-
-
-    if (operator == '=') {
-        notCalculatedNumber = document.querySelector('#display p').textContent;
-        if (notCalculatedNumber == "") showOnDisplay(currentCount);
-        calculate(lastOperator, currentCount, parseInt(notCalculatedNumber));
-    } else {
-        lastOperator = operator;
-    };
-
-    if (!(operatorsUsed == 2 || operator == '=')) {
-    currentCount = operate(operator, currentCount, parseInt(newNumber));
-    clearDisplay();
-    };
-
-    if (operatorsUsed == 2 || operator == '=') {
-        showOnDisplay(currentCount);
-        operatorsUsed = 0;
-    };
-
-    newNumber = "";
+function addToHistoryArray(charac) {
+    typeHistory.push(charac);
 };
+
+function getLastHistory() { 
+    lengthOfArray = typeHistory.length;
+    if (lengthOfArray == 0) return undefined;
+
+    lastElementAdded = typeHistory[lengthOfArray - 1];
+    return lastElementAdded;
+};
+
+
 
 function addEventListeners() {
     const buttons = document.querySelectorAll(".digit");
@@ -87,20 +76,27 @@ function addEventListeners() {
     const clearButton = document.querySelector('#clear');
     clearButton.addEventListener('click', () => clear()); 
 
-    const operatorButton = document.querySelectorAll('.operator, .result');
-    operatorButton.forEach(operator => operator.addEventListener('click', (e) => {
-        calculate(e.target.id);
-    }));
+    const operatorButton = document.querySelectorAll('.operator');
+    operatorButton.forEach(button => button.addEventListener('click', (e) => {
+
+        let lastElementAdded = getLastHistory();
+
+        //check if input is empty or if first input
+        if (!(currentNumber == "" && typeof lastElementAdded == "string")) {
+        addToHistoryArray(parseFloat(currentNumber));
+        addToHistoryArray(e.target.id);
+        };
+        
+        clearDisplay();
+        currentNumber = "";
 
 
-    const equalsButton = document.querySelector('.result');
-    equalsButton.addEventListener('click', () => calculate('='));
+    }))
 };
 
-let lastOperator;
-let newNumber = "";
-let currentCount = null;
-let operatorsUsed = 0;
+let typeHistory = [];
+let currentNumber;
+let currentScore;
 addEventListeners();
 
 //event listener to operators
