@@ -32,7 +32,14 @@ function operate(operator,num1, num2) {
 };
 
 function extendNumber(char) {
+    if (!allowInput) return;
     let oldNumber = (currentNumber == undefined) ? "" : currentNumber;
+
+    if (resetDisplayOnNextAction) {
+        currentNumber = "";
+        resetDisplayOnNextAction = false;
+    };
+
     currentNumber = oldNumber + char;
     showOnDisplay(currentNumber);
 };
@@ -51,6 +58,7 @@ function clear() {
     clearDisplay();
     typeHistory = [];
     currentNumber = "";
+    allowInput = true;
 };
 
 function addToHistoryArray(charac) {
@@ -114,6 +122,7 @@ function calculate() {
     clearDisplay();
 
     let result = calculateArrayHistory();
+
     typeHistory = [];
     extendNumber(result);
 };
@@ -128,27 +137,46 @@ function addEventListeners() {
 
     const operatorButton = document.querySelectorAll('.operator');
     operatorButton.forEach(button => button.addEventListener('click', (e) => {
+        allowInput = true;
+
 
         let lastElementAdded = getLastHistory();
 
         //check if input is empty or if first input
         if (!(currentNumber == "" && typeof lastElementAdded == "string")) {
+
+        const isOperatorUsed = typeHistory.some((element) => isOperator(element));
+        if (isOperatorUsed) {
+            calculate();
+            resetDisplayOnNextAction = true;
+        } else {
+            clearDisplay();
+        };
+
         addToHistoryArray(parseFloat(currentNumber));
         addToHistoryArray(e.target.id);
         };
 
-        clearDisplay();
         currentNumber = "";
     }));
 
     const equalsButton = document.querySelector('.result');
-    equalsButton.addEventListener('click', () => calculate());
+    equalsButton.addEventListener('click', () => {
+        let lastOperator = getLastHistory();
+        if ((isOperator(lastOperator) && (currentNumber == "")) 
+            || (typeHistory.length < 2)) return;
+
+        calculate()
+        allowInput = false;
+    });
 };
 
 let typeHistory = [];
-
+let allowInput = true;
+let usedOperators = 0;
+let resetDisplayOnNextAction = false;
 //displayed on display
-let currentNumber;
+let currentNumber = "";
 addEventListeners();
 
 //event listener to operators
