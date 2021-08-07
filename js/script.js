@@ -74,11 +74,10 @@ function calculateArrayHistory() {
     let currentNumber;
 
     let total = typeHistory.reduce((total, currentEntry) => {
-        console.log(1);
         if (isOperator(currentEntry)) {
             currentOperator = currentEntry;
         } else {
-            currentNumber = currentEntry;
+            currentNumber = currentEntry; 
         };
 
         if (!(currentOperator == undefined) && !(currentNumber == undefined)) {
@@ -86,7 +85,7 @@ function calculateArrayHistory() {
             let result = operate(currentOperator, total, currentNumber);
 
             //reset values
-            currentScore = undefined;
+            currentOperator = undefined;
             currentNumber = undefined;
 
             return result;
@@ -107,6 +106,17 @@ function getLastHistory() {
     return lastElementAdded;
 };
 
+function calculate() {
+    if (typeHistory.length < 2) return;
+
+    typeHistory.push(parseFloat(currentNumber));
+    currentNumber = "";
+    clearDisplay();
+
+    let result = calculateArrayHistory();
+    typeHistory = [];
+    extendNumber(result);
+};
 
 
 function addEventListeners() {
@@ -129,7 +139,10 @@ function addEventListeners() {
 
         clearDisplay();
         currentNumber = "";
-    }))
+    }));
+
+    const equalsButton = document.querySelector('.result');
+    equalsButton.addEventListener('click', () => calculate());
 };
 
 let typeHistory = [];
