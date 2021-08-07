@@ -31,6 +31,12 @@ function operate(operator,num1, num2) {
     return result;
 };
 
+function round(number) {
+    //rounds a number, so it does have 10 decimals
+    let calculationNumber = Math.pow(10, 10);
+    return Math.round(number * calculationNumber) / calculationNumber;
+};
+
 function extendNumber(char) {
     if (!allowInput) return;
     let oldNumber = (currentNumber == undefined) ? "" : currentNumber;
@@ -40,13 +46,26 @@ function extendNumber(char) {
         resetDisplayOnNextAction = false;
     };
 
-    currentNumber = oldNumber + char;
+    if (currentNumber.length > 16) return;
+    if (currentNumber.includes('.') && char == '.') return;
+    if (char == '.' && currentNumber == "") return;
+    currentNumber = String(oldNumber + char);
+
     showOnDisplay(currentNumber);
 };
 
 function showOnDisplay(text) {
     const display = document.querySelector('#display p');
     display.textContent = text;
+};
+
+function backspace() {
+    if (currentNumber == "") return;
+    if (!allowInput) return;
+
+    currentNumber = currentNumber.slice(0, -1);
+    showOnDisplay(currentNumber);
+
 };
 
 function clearDisplay() {
@@ -59,6 +78,7 @@ function clear() {
     typeHistory = [];
     currentNumber = "";
     allowInput = true;
+    resetDisplayOnNextAction = false;
 };
 
 function addToHistoryArray(charac) {
@@ -81,11 +101,18 @@ function calculateArrayHistory() {
     let currentOperator;
     let currentNumber;
 
+    let dividedByZero = false;
+
     let total = typeHistory.reduce((total, currentEntry) => {
+
         if (isOperator(currentEntry)) {
             currentOperator = currentEntry;
         } else {
             currentNumber = currentEntry; 
+        };
+
+        if (currentOperator == "/" && currentNumber == "0") {
+            dividedByZero = true;
         };
 
         if (!(currentOperator == undefined) && !(currentNumber == undefined)) {
@@ -102,6 +129,11 @@ function calculateArrayHistory() {
         return total;
 
     }, currentScore);
+
+    if (dividedByZero) {
+        alert("You are unable to divide by 0.");
+        window.location.reload();
+    }
 
     return total;
 };
@@ -127,50 +159,79 @@ function calculate() {
     extendNumber(result);
 };
 
+function manipulateHistory(operator) {
+    allowInput = true;
+
+    let lastElementAdded = getLastHistory();
+
+    //check if input is empty or if first input
+    if (!(currentNumber == "" && typeof lastElementAdded == "string")) {
+
+    const isOperatorUsed = typeHistory.some((element) => isOperator(element));
+    if (isOperatorUsed) {
+        calculate();
+        resetDisplayOnNextAction = true;
+    } else {
+        clearDisplay();
+    };
+
+    addToHistoryArray(parseFloat(currentNumber));
+    addToHistoryArray(operator);
+    };
+
+    currentNumber = "";
+};
+
+function displayResult() {
+    let lastOperator = getLastHistory();
+    if ((isOperator(lastOperator) && (currentNumber == "")) 
+        || (typeHistory.length < 2)) return;
+
+    calculate()
+    allowInput = false;
+};
 
 function addEventListeners() {
     const buttons = document.querySelectorAll(".digit");
-    buttons.forEach(button => button.addEventListener('click', (e) => extendNumber(e.target.id)));
+    buttons.forEach(button => button.addEventListener('click', (e) => extendNumber(e.target.id))); 
 
     const clearButton = document.querySelector('#clear');
     clearButton.addEventListener('click', () => clear()); 
 
+    const deleteButton = document.querySelector('.backspace');
+    deleteButton.addEventListener('click', () => backspace());
+
     const operatorButton = document.querySelectorAll('.operator');
-    operatorButton.forEach(button => button.addEventListener('click', (e) => {
-        allowInput = true;
-
-
-        let lastElementAdded = getLastHistory();
-
-        //check if input is empty or if first input
-        if (!(currentNumber == "" && typeof lastElementAdded == "string")) {
-
-        const isOperatorUsed = typeHistory.some((element) => isOperator(element));
-        if (isOperatorUsed) {
-            calculate();
-            resetDisplayOnNextAction = true;
-        } else {
-            clearDisplay();
-        };
-
-        addToHistoryArray(parseFloat(currentNumber));
-        addToHistoryArray(e.target.id);
-        };
-
-        currentNumber = "";
-    }));
+    operatorButton.forEach(button => button.addEventListener('click', (e) => manipulateHistory(e.target.id)));
 
     const equalsButton = document.querySelector('.result');
-    equalsButton.addEventListener('click', () => {
-        let lastOperator = getLastHistory();
-        if ((isOperator(lastOperator) && (currentNumber == "")) 
-            || (typeHistory.length < 2)) return;
-
-        calculate()
-        allowInput = false;
-    });
+    equalsButton.addEventListener('click', () => displayResult());
 };
 
+function addHotKeys () {
+    window.addEventListener('keydown', (event) => {
+        isNumber = /^[0-9|.]$/.test(event.key);
+        if (isNumber) {
+            extendNumber(event.key);
+        };
+
+        if (isOperator(event.key)) {
+            manipulateHistory(event.key);
+        };
+
+        if (event.key == "Delete") {
+            clear();
+        };
+
+        if (event.key == "Backspace") {
+            backspace();
+        };
+
+        if (event.key == "=") {
+            displayResult();
+        };
+    });
+};
 let typeHistory = [];
 let allowInput = true;
 let usedOperators = 0;
@@ -178,13 +239,4 @@ let resetDisplayOnNextAction = false;
 //displayed on display
 let currentNumber = "";
 addEventListeners();
-
-//event listener to operators
-
-//Create a counter for clicked operators, if equals 2 do the calculation or = was pressed
-
-//if event listerner is clicked, convert the current string on the display without the operator to a number object
-//make oldTextContent a global let, this will be used as last number
-//in calculate clearDisplay
-//check which operates was choosed by event.target
-//do the calculation and add ther result to a global score which is at the beginning 0
+addHotKeys();
