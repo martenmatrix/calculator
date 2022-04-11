@@ -24,7 +24,7 @@ The application is hosted at the following address:
 3. Choose another number.
 4. Choose another operator, if you want to expand your calculation. If not, press the equal sign.
 5. If everything went fine, you should now be able to see the calculated result. :tada:
-If not, please [create an issue](https://github.com/martenmatrix/capital-gains-trading-calculator/issues/new).
+If not, please [create an issue](https://github.com/martenmatrix/calculator/issues/new).
 6. Jump to step three, if you chose to expand your calculation.
 
 ## :sparkles: Features
