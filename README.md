@@ -34,7 +34,7 @@ If not, please [create an issue](https://github.com/martenmatrix/calculator/issu
 
 ## :wrench: Installation
 If you want to run the application on your local pc or just want to contribute, do the following steps:
-1. Clone the repository.
+1. Clone the repository:
 `git clone https://github.com/martenmatrix/calculator`
 2. Open up `index.html` or use an application like [Liver Server for VSC](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) for your IDE to load the page.
 
